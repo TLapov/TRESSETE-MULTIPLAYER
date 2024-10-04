@@ -53,10 +53,15 @@ function createRoomUI() {
             const li = document.createElement('li');
             rooms.forEach(room => {
                 li.textContent = room;
+                ul.append(li);
                 li.addEventListener('click', () => {
                     socket.emit('join-room', room);
+                    socket.on('response-join', (msg, err) => {
+                        toast(msg);
+                        console.log(!err)
+                        if(!err) createGameUI();
+                    })
                 });
-                ul.append(li);
             })
             roomsContainer.appendChild(ul);
         }
