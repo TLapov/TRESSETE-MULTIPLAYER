@@ -7,3 +7,12 @@
 h1 {
     color: red;
 }
+
+.alert {
+    color: red;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 2rem 4rem;
+    border: red 1px solid;
+}
