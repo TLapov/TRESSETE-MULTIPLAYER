@@ -1,7 +1,7 @@
 const socket = io();
-const gamerContainer = document.querySelector('.game-container');
+const gameSection = document.querySelector('.game-section');
 
-window.addEventListener('load', () => { gamerContainer.appendChild(createUserNameUI()) });
+window.addEventListener('load', () => { gameSection.appendChild(createUserNameUI()) });
 
 function createUserNameUI() {
     const container = document.createElement('div');
@@ -18,16 +18,10 @@ function createUserNameUI() {
 
     button.addEventListener('click', (e) => {
         e.preventDefault();
-        let error = null;
         if(input.value) {
-            socket.emit('set-username', input.value);
-            socket.on('response-username', (msg, err) => {
-                if(err) {
-                    toast(msg);
-                }else {
-                    toast(msg);
-                    createRoomUI();
-                }
+            socket.emit('set-username', input.value, (response) => {
+                toast(response.msg);
+                response.success && createRoomUI();
             });
         }
     });
@@ -49,25 +43,21 @@ function createRoomUI() {
     const ul = document.createElement('ul');
 
     socket.on('rooms-list', (rooms) => {
-        if(rooms) {
-            rooms.forEach(room => {
-                const li = document.createElement('li');
-                li.textContent = room;
-                ul.append(li);
-                li.addEventListener('click', () => {
-                    socket.emit('join-room', room);
-                    socket.on('response-join', (msg, err) => {
-                        toast(msg);
-                        if(!err) {
-                            socket.emit('start-game', room);
-                            createGameUI();
-                        }
-                    });
+        rooms.forEach(room => {
+            const li = document.createElement('li');
+            li.textContent = room;
+            ul.append(li);
+            li.addEventListener('click', () => {
+                socket.emit('join-room', room, (response) => {
+                    toast(response.msg);
+                    if(response.success) {
+                        socket.emit('start-game', room);
+                        createGameUI();
+                    }
                 });
-            })
-            roomsContainer.appendChild(ul);
-        }
-    })  
+            });
+        })
+    });  
 
     container.className = 'room-container';
     form.className = 'room-form';
@@ -78,38 +68,31 @@ function createRoomUI() {
 
     form.append(input);
     form.append(button);
+    roomsContainer.append(ul);
     container.append(form);
     container.append(roomsContainer);
 
-    gamerContainer.innerHTML = '';
-    gamerContainer.append(container);
+    gameSection.innerHTML = '';
+    gameSection.append(container);
 
     button.addEventListener('click', (e) => {
         e.preventDefault();
         if(input.value) {
-            socket.emit('create-room', input.value);
-            socket.on('response-room', (msg, err) => {
-                if(err) {
-                    toast(msg);
-                }else {
-                    toast(msg);
-                    createGameUI();
-                }
-            })
+            socket.emit('create-room', input.value, (response) => {
+                toast(response.msg);
+                response.success && createGameUI();
+            });
         }
     });
 
 }
 
-
 function createGameUI() {
     const container = document.createElement('div');
     const playerOne = document.createElement('div');
     const playerTwo = document.createElement('div');
-    const playerOneUl = document.createElement('ul');
-    const playerTwoUl = document.createElement('ul');
-
-    container.className = 'start-game-container';
+    const playerOneCards = document.createElement('ul');
+    const playerTwoCards = document.createElement('ul');
 
     socket.on('deck-cards', (cards) => {
         cards.forEach(card => {
@@ -117,29 +100,24 @@ function createGameUI() {
             const img = document.createElement('img');
             img.src = card.img;
             li.append(img);
-            playerOneUl.append(li);
+            playerOneCards.append(li);
             li.addEventListener('click', (card) => {
                 socket.emit('socket-card', card);
             });
         });
     });
 
-    socket.on('send-card', (card) => {
-        const li = document.createElement('li');
-        const img = document.createElement('img');
-        img.src = card.img;
-        li.append(img);
-        li.addEventListener('click', card => socket.emit('socket-card', card));
-    });
+    container.classList = 'game-container';
+    playerOne.classList = 'player-one';
+    playerTwo.classList = 'player-two';
+    playerOne.append(playerOneCards);
+    playerTwo.append(playerTwoCards);
 
-    playerOne.append(playerOneUl);
-    playerTwo.append(playerTwoUl);
-       
     container.append(playerOne);
     container.append(playerTwo);
 
-    gamerContainer.innerHTML = '';
-    gamerContainer.append(container);
+    gameSection.innerHTML = '';
+    gameSection.append(container);
 }
 
 function toast(msg) {

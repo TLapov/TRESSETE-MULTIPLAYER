@@ -1,7 +1,5 @@
 import { Server } from "socket.io";
 import { CustomSocket } from "../config/types";
-import { Cards } from "../config/cards";
-import { GameService } from "./game.service";
 
 export class SocketService {
     socket: CustomSocket;
@@ -12,64 +10,35 @@ export class SocketService {
         this.io = io;
     }
     
-    public createUsername = (username: string): void => {
-        let existUsername = false;
-        this.io.sockets.sockets.forEach((s: CustomSocket) => {
-            if(s.username === username) {
-                existUsername = true;
-            }
-        });
-        if(existUsername) {
-            this.socket.emit('response-username', `${username} is already exsist.`, existUsername);
+    public createUsername = (username: string, response: Function) => {
+        if(this.checkUsername(username)) {
+            response({ sucess: false, msg: `${username} is already exsist.`});
         }else {
             this.socket.username = username;
-            this.socket.emit('response-username', `${this.socket.username} is created!`);
+            response({ success: true, msg: `${this.socket.username} is created!`});
             this.socket.emit('rooms-list', this.getActiveRooms());
         }
     }
 
-    public createRoom = (room: string) => {
+    public createRoom = (room: string, response: Function) => {
         const roomExsist = this.getActiveRooms().find(r => r === room);
         if(roomExsist) {
-            this.socket.emit('response-room', `${room} already exsist`, roomExsist);
+            response({success: false, msg: `${room} already exsist`});
         }else {
             this.socket.join(room);
             this.io.emit('rooms-list', this.getActiveRooms());
-            this.socket.emit('response-room', `${room} is created!`);
+            response({success: true, msg: `${room} is created!`});
         }
     }
 
-    public joinRoom = (room: string) => {
+    public joinRoom = (room: string, response: Function) => {
         const roomSize: number = this.io.sockets.adapter.rooms.get(room)?.size || 0;
         if(roomSize >= 2) {
-            this.socket.emit('response-join', `${room} is full!`, true);
+            response({success: false, msg: `${room} is full!`});
         }else {
             this.socket.join(room);
-            this.socket.emit('response-join', `User ${this.socket.username} is join to ${room} room`);
+            response({success: true, msg: `User ${this.socket.username} is join to ${room} room`});
         }
-    }
-
-    public startGame = (room: string) => {
-        let players: CustomSocket[] = [];
-        const r = this.io.sockets.adapter.rooms.get(room);
-        r?.forEach(r =>  {
-            this.io.sockets.sockets.forEach((s: CustomSocket) => {
-                if(s.id === r) {
-                    players.push(s);
-                }
-            })
-        });
-        new GameService(players);
-
-        // const deckOfCards = new Cards().deck(); 
-        // this.io.sockets.sockets.forEach((s: CustomSocket) => {
-        //     if(s.id === players[0]) {
-        //         s.emit('deck-cards', [...deckOfCards.slice(0,5), ...deckOfCards.slice(10, 15)])
-        //     }
-        //     if(s.id === players[1]) {
-        //         s.emit('deck-cards', [...deckOfCards.slice(5,10), ...deckOfCards.slice(15, 20)])
-        //     }
-        // });
     }
 
     private getActiveRooms(): Array<string> {
@@ -77,6 +46,16 @@ export class SocketService {
         const filtered = arr.filter((room: any) => !room[1].has(room[0]));
         const res: Array<string> = filtered.map((i:any) => i[0]);
         return res;
+    }
+
+    private checkUsername(username: string): boolean {
+        let exsist = false;
+        this.io.sockets.sockets.forEach((socket: CustomSocket) => {
+            if(socket.username === username) {
+                exsist = true;
+            }
+        });
+        return exsist;
     }
 
     public disconnect = () => {
