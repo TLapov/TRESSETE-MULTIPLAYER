@@ -50,17 +50,19 @@ function createRoomUI() {
 
     socket.on('rooms-list', (rooms) => {
         if(rooms) {
-            const li = document.createElement('li');
             rooms.forEach(room => {
+                const li = document.createElement('li');
                 li.textContent = room;
                 ul.append(li);
                 li.addEventListener('click', () => {
                     socket.emit('join-room', room);
                     socket.on('response-join', (msg, err) => {
                         toast(msg);
-                        console.log(!err)
-                        if(!err) createGameUI();
-                    })
+                        if(!err) {
+                            socket.emit('start-game', room);
+                            createGameUI();
+                        }
+                    });
                 });
             })
             roomsContainer.appendChild(ul);
@@ -102,10 +104,40 @@ function createRoomUI() {
 
 function createGameUI() {
     const container = document.createElement('div');
+    const playerOne = document.createElement('div');
+    const playerTwo = document.createElement('div');
+    const playerOneUl = document.createElement('ul');
+    const playerTwoUl = document.createElement('ul');
+
     container.className = 'start-game-container';
-    const ul = document.createElement('ul');
-    ul.append('<li>Hello world</li>');
-    container.append(ul);
+
+    socket.on('deck-cards', (cards) => {
+        cards.forEach(card => {
+            const li = document.createElement('li');
+            const img = document.createElement('img');
+            img.src = card.img;
+            li.append(img);
+            playerOneUl.append(li);
+            li.addEventListener('click', (card) => {
+                socket.emit('socket-card', card);
+            });
+        });
+    });
+
+    socket.on('send-card', (card) => {
+        const li = document.createElement('li');
+        const img = document.createElement('img');
+        img.src = card.img;
+        li.append(img);
+        li.addEventListener('click', card => socket.emit('socket-card', card));
+    });
+
+    playerOne.append(playerOneUl);
+    playerTwo.append(playerTwoUl);
+       
+    container.append(playerOne);
+    container.append(playerTwo);
+
     gamerContainer.innerHTML = '';
     gamerContainer.append(container);
 }

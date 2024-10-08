@@ -14,5 +14,6 @@ export class SocketController {
         this.socket.on('create-room', this.service.createRoom);
         this.socket.on('join-room', this.service.joinRoom);
         this.socket.on('disconnected', this.service.disconnect);
+        this.socket.on('start-game', this.service.startGame);
     }
 }
