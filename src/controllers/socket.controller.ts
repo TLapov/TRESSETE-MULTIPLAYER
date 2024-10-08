@@ -1,19 +1,22 @@
 import { Server } from "socket.io";
 import { CustomSocket } from "../config/types";
 import { SocketService } from "../services/socket.service";
+import { GameService } from "../services/game.service";
 
 export class SocketController {
     socket: CustomSocket;
-    service: SocketService;
+    roomService: SocketService;
+    gameService: GameService;
 
     constructor(io: Server, socket: CustomSocket) {
         this.socket = socket;
-        this.service = new SocketService(io, socket);
-        
-        this.socket.on('set-username', this.service.createUsername);
-        this.socket.on('create-room', this.service.createRoom);
-        this.socket.on('join-room', this.service.joinRoom);
-        this.socket.on('disconnected', this.service.disconnect);
-        this.socket.on('start-game', this.service.startGame);
+        this.roomService = new SocketService(io, socket);
+        this.gameService = new GameService(io, socket);
+
+        this.socket.on('set-username', this.roomService.createUsername);
+        this.socket.on('create-room', this.roomService.createRoom);
+        this.socket.on('join-room', this.roomService.joinRoom);
+        this.socket.on('disconnected', this.roomService.disconnect);
+        this.socket.on('start-game', this.gameService.startGame);
     }
 }
