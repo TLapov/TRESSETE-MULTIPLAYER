@@ -1,5 +1,7 @@
 import { Server } from "socket.io";
 import { CustomSocket } from "../config/types";
+import { Cards } from "../config/cards";
+import { GameService } from "./game.service";
 
 export class SocketService {
     socket: CustomSocket;
@@ -43,12 +45,31 @@ export class SocketService {
             this.socket.emit('response-join', `${room} is full!`, true);
         }else {
             this.socket.join(room);
-            this.socket.emit('response-join', `User ${this.socket.username} is join to ${room} room`)
+            this.socket.emit('response-join', `User ${this.socket.username} is join to ${room} room`);
         }
     }
 
-    public disconnect = () => {
-        console.log('User disconnected:', this.socket.username);
+    public startGame = (room: string) => {
+        let players: CustomSocket[] = [];
+        const r = this.io.sockets.adapter.rooms.get(room);
+        r?.forEach(r =>  {
+            this.io.sockets.sockets.forEach((s: CustomSocket) => {
+                if(s.id === r) {
+                    players.push(s);
+                }
+            })
+        });
+        new GameService(players);
+
+        // const deckOfCards = new Cards().deck(); 
+        // this.io.sockets.sockets.forEach((s: CustomSocket) => {
+        //     if(s.id === players[0]) {
+        //         s.emit('deck-cards', [...deckOfCards.slice(0,5), ...deckOfCards.slice(10, 15)])
+        //     }
+        //     if(s.id === players[1]) {
+        //         s.emit('deck-cards', [...deckOfCards.slice(5,10), ...deckOfCards.slice(15, 20)])
+        //     }
+        // });
     }
 
     private getActiveRooms(): Array<string> {
@@ -58,4 +79,7 @@ export class SocketService {
         return res;
     }
 
+    public disconnect = () => {
+        console.log('User disconnected:', this.socket.username);
+    }
 }

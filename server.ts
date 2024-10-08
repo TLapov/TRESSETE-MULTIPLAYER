@@ -4,6 +4,7 @@ import app from './src/app';
 import { HOST, PORT } from './src/config/constants';
 import { SocketController } from './src/controllers/socket.controller';
 import { CustomSocket } from './src/config/types';
+import { Cards } from './src/config/cards';
 
 const server = http.createServer(app);
 
