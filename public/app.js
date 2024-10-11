@@ -89,35 +89,98 @@ function createRoomUI() {
 
 function createGameUI() {
     const container = document.createElement('div');
+    container.classList = 'game-container';
+
+    const showContainer = document.createElement('div');
+    showContainer.classList = 'game-container__show-container';
+
     const playerOne = document.createElement('div');
+    playerOne.classList = 'game-container__player-one';
     const playerTwo = document.createElement('div');
+    playerTwo.classList = 'game-container__player-two';
+
     const playerOneCards = document.createElement('ul');
     const playerTwoCards = document.createElement('ul');
 
-    socket.on('deck-cards', (cards) => {
-        cards.forEach(card => {
-            const li = document.createElement('li');
-            const img = document.createElement('img');
-            img.src = card.img;
-            li.append(img);
-            playerOneCards.append(li);
-            li.addEventListener('click', (card) => {
-                socket.emit('socket-card', card);
-            });
-        });
-    });
-
-    container.classList = 'game-container';
-    playerOne.classList = 'player-one';
-    playerTwo.classList = 'player-two';
-    playerOne.append(playerOneCards);
-    playerTwo.append(playerTwoCards);
+    playerOne.append(playerTwoCards);
+    playerTwo.append(playerOneCards);
 
     container.append(playerOne);
     container.append(playerTwo);
 
     gameSection.innerHTML = '';
     gameSection.append(container);
+    
+    socket.on('deck-cards', (cards) => {
+        cards.forEach(card => {
+            const li = document.createElement('li');
+            li.dataset.category = card.category;
+            const img = document.createElement('img');
+            img.src = card.img;
+
+            li.append(img);
+            playerOneCards.append(li);
+            addOpponentCard();
+            li.addEventListener('click', (e) => play(e,card));
+        });
+    });
+
+    socket.on('show-card', card => showCard(card));
+
+    socket.on('rm-opponent-card', () => {
+        const cardList = playerTwoCards.querySelectorAll('li');
+        const randomNum = Math.floor(Math.random() * 10);
+        cardList[randomNum].remove();
+    });
+
+    socket.on('get-card', (card) => {
+        const img = document.createElement('img');
+        const li = Array.from(playerOne.querySelectorAll('li')).find(li => li.childElementCount === 0);
+        li.dataset.category = card.category;
+        img.src = card.img;
+        li.append(img);
+        showContainer.innerHTML = '';
+        addOpponentCard();
+    });
+
+    function addOpponentCard() {
+        const opponentLi = document.createElement('li');
+        const opponentImg = document.createElement('img');
+
+        opponentImg.src = 'assets/backside.png';
+        opponentLi.append(opponentImg);
+        playerTwoCards.append(opponentLi);
+    }
+
+    function play(e, card) {
+        const li = e.currentTarget;
+        const prevCard = showContainer.firstChild;
+        if(prevCard) {
+            const category = prevCard.getAttribute('data-category');
+            const list = Array.from(playerOne.querySelectorAll('li')).filter(l => l.getAttribute('data-category') === category);
+            const match = list.find(l => l.getAttribute('data-category') === li.dataset.category);
+            if(list.length && !match) {
+                toast('Choose right card');
+            }else {
+                socket.emit('play-game', card, () => li.querySelector('img').remove());
+            }
+        }else {
+            socket.emit('play-game', card, () => li.querySelector('img').remove());
+        }      
+    };
+
+    function showCard(card) {
+        const div = document.createElement('div');
+        const img = document.createElement('img');
+    
+        img.src = card.img;
+        div.className = 'get-card-container';
+        div.dataset.category = card.category;
+        
+        div.append(img);
+        showContainer.append(div);
+        container.append(showContainer);
+    }
 }
 
 function toast(msg) {
@@ -127,4 +190,5 @@ function toast(msg) {
     document.body.append(div)
     setTimeout(() => div.remove(), 4000);
 }
+
 
