@@ -1,20 +1,38 @@
 const socket = io();
 const gameSection = document.querySelector('.game-section');
 
-window.addEventListener('load', () => { gameSection.appendChild(createUserNameUI()) });
+gameSection.append(createUserNameUI());
 
 function createUserNameUI() {
     const container = document.createElement('div');
-    const form = document.createElement('form'); 
-    const input = document.createElement('input');
-    const button = document.createElement('button');
-
     container.className = 'username-container';
-    form.className = 'username-form';
+
+    const form = document.createElement('form');
+    form.className = 'username-container__form';
+
+    const inputContainer = document.createElement('div');
+    inputContainer.className = 'username-container__input-container';
+  
+    const input = document.createElement('input');
     input.type = 'text';
-    input.placeholder = 'Enter a username';
+    input.className = 'username-container__input';
+
+    const label = document.createElement('label');
+    label.textContent = 'Enter a username';
+    label.className = 'username-container__label';
+
+    const button = document.createElement('button');
     button.type = 'submit';
     button.textContent = 'Create username';
+    button.className = 'username-container__button';
+
+    inputContainer.append(input);
+    inputContainer.append(label);
+
+    form.append(inputContainer);
+    form.append(button);
+
+    container.append(form);
 
     button.addEventListener('click', (e) => {
         e.preventDefault();
@@ -25,11 +43,6 @@ function createUserNameUI() {
             });
         }
     });
-
-    form.append(input);
-    form.append(button);
-
-    container.appendChild(form);
 
     return container;
 }
@@ -188,7 +201,7 @@ function toast(msg) {
     div.className = 'alert';
     div.textContent = msg;
     document.body.append(div)
-    setTimeout(() => div.remove(), 4000);
+    setTimeout(() => div.remove(), 3000);
 }
 
 

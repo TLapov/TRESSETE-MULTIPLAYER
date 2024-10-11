@@ -4,6 +4,13 @@
     box-sizing: border-box;
 }
 
+:root {
+    --bg-user-color: #f6e2e2;
+    --text-white: #fff;
+    --text-dark: #000000;
+    --alert-bg: #e74c3c;
+}
+
 html {
     font-size: 1rem;
 }
@@ -12,27 +19,89 @@ ul {
     list-style: none;
 }
 
-.game-section {
-    height: 100vh;
-}
-
-.game-container__player-one ul, 
-.game-container__player-two ul {
-    display: flex;
-    justify-content: center;
-    column-gap: 0.5rem;
-}; 
-
 img {
     width: 100px;
     height: 200px;
 }
 
 .alert {
-    color: red;
+    background: var(--alert-bg);
+    color: var(--text-white);
     position: absolute;
-    right: 0;
-    top: 0;
-    padding: 2rem 4rem;
-    border: red 1px solid;
+    right: 10px;
+    top: 20px;
+    border-radius: 7px;
+    padding: 1rem 2rem;
 }
+
+.game-section {
+    height: 100vh;
+}
+/* enter a username section */
+.username-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: url('assets/briscolaLogoTransparentColor.png') no-repeat center;
+    background-color: var(--bg-user-color);
+}
+
+.username-container__input-container {
+    position: relative;
+    width: 100%;
+    min-width: 300px;
+}
+
+.username-container__label{
+	position:absolute;
+	top:0;
+	left:50%;
+    transform: translateX(-50%);
+	font-size: 1rem;
+	color:#fff;	
+	transition: all 0.5s ease-in-out;
+}
+
+.username-container__input{
+    width: 100%;
+    border:0;
+    border-radius: 7px; 
+    padding: 1rem 0 1rem 0.5rem;
+    font-size: 1rem;
+    color: var(--text-white);
+    background: var(--text-dark);
+}
+
+.username-container__input:focus{ 
+    border:none;	
+    outline:none;
+    border-bottom: 3px solid #e74c3c;	
+}
+
+.username-container__input:focus ~ label{
+	top: -15px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: var(--alert-bg);
+}
+
+.username-container__button {
+    width: 100%;
+    cursor: pointer;
+    border: none;
+    padding: 0.5rem 0 0.5rem 0;
+    margin-top: 1rem;
+    border-radius: 7px;
+    background-color: var(--alert-bg);
+    color: var(--text-white);
+}
+ 
+/* end of enter a username section */
+
+.game-container__player-one ul, 
+.game-container__player-two ul {
+    display: flex;
+    justify-content: center;
+    column-gap: 0.5rem;
+};
