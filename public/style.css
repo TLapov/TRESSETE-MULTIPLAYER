@@ -4,9 +4,24 @@
     box-sizing: border-box;
 }
 
-h1 {
-    color: red;
+html {
+    font-size: 1rem;
 }
+
+ul {
+    list-style: none;
+}
+
+.game-section {
+    height: 100vh;
+}
+
+.game-container__player-one ul, 
+.game-container__player-two ul {
+    display: flex;
+    justify-content: center;
+    column-gap: 0.5rem;
+}; 
 
 img {
     width: 100px;
@@ -20,8 +35,4 @@ img {
     top: 0;
     padding: 2rem 4rem;
     border: red 1px solid;
-}
-
-li {
-    display: inline;
 }
